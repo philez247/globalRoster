@@ -1255,25 +1255,12 @@ table td form {
 /* TABLE WRAPPER */
 .traders-table-wrapper {
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Ensure the table doesn't collapse on small screens */
-.traders-table-wrapper table {
-  min-width: 480px;
-  width: 100%;
-  border-collapse: collapse;
 }
 
 /* Base table */
 .traders-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 480px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
 }
 
 .traders-table thead {
@@ -2042,13 +2029,6 @@ table td form {
 
 /* Mobile Media Query - Apply all mobile styles */
 @media (max-width: 768px) {
-  /* TABLE - Smaller padding on phone */
-  .traders-table-wrapper table th,
-  .traders-table-wrapper table td {
-    padding: 8px 6px;
-    font-size: 0.85rem;
-  }
-
   /* --- MOBILE FULL-SCREEN MODALS --- */
   .uniform-modal .modal-dialog {
     max-width: 100%;
@@ -2081,6 +2061,51 @@ table td form {
   /* Hide table, show cards for requests */
   .requests-table-wrapper {
     display: block;
+  }
+}
+
+/* ---- Traders table mobile layout ---- */
+@media (max-width: 900px) {
+  .traders-table {
+    table-layout: fixed;
+    width: 100%;
+    font-size: 0.85rem;
+  }
+
+  .traders-table th,
+  .traders-table td {
+    padding: 0.35rem 0.35rem;
+  }
+
+  /* Name gets most of the space */
+  .traders-table th.col-name,
+  .traders-table td.col-name {
+    width: 55%;
+    text-align: left;
+  }
+
+  /* Alias + Location narrow but readable */
+  .traders-table th.col-alias,
+  .traders-table td.col-alias,
+  .traders-table th.col-location,
+  .traders-table td.col-location {
+    width: 18%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+
+  /* Bio tiny column for the button */
+  .traders-table th.col-bio,
+  .traders-table td.col-bio {
+    width: 9%;
+    text-align: center;
+  }
+
+  .bio-button {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.7rem;
   }
 }
 

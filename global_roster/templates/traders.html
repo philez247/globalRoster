@@ -8,22 +8,22 @@
       <table id="traders-table" class="traders-table">
         <thead>
           <tr>
-            <th data-sort="name" class="sortable">Name</th>
-            <th data-sort="alias" class="sortable">Alias</th>
-            <th data-sort="location" class="sortable">Location</th>
-            <th>Bio</th>
+            <th data-sort="name" class="sortable col-name">Name</th>
+            <th data-sort="alias" class="sortable col-alias">Alias</th>
+            <th data-sort="location" class="sortable col-location">Location</th>
+            <th class="col-bio">Bio</th>
           </tr>
         </thead>
         <tbody>
           {% for trader in traders %}
           <tr>
-            <td class="cell-name">{{ trader.name }}</td>
-            <td class="cell-alias">{{ trader.alias }}</td>
-            <td class="cell-center">{{ trader.location }}</td>
-            <td class="cell-center">
+            <td class="cell-name col-name">{{ trader.name }}</td>
+            <td class="cell-alias col-alias">{{ trader.alias }}</td>
+            <td class="cell-center col-location">{{ trader.location }}</td>
+            <td class="cell-center col-bio">
               <button
                 type="button"
-                class="btn-bio"
+                class="btn-bio bio-button"
                 data-trader-id="{{ trader.id }}"
               >
                 BIO
