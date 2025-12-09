@@ -1,13 +1,30 @@
 """Main FastAPI application."""
-from fastapi import FastAPI, Request
+import secrets
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from global_roster.core.config import TEMPLATES_DIR, STATIC_DIR
 from global_roster.routes import config, management, traders as traders_router, trader_requests
 
-app = FastAPI(title="Global Roster")
+security = HTTPBasic()
+
+
+def check_credentials(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(credentials.username, "globalRoster")
+    correct_password = secrets.compare_digest(credentials.password, "Moycullen")
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
+
+
+app = FastAPI(title="Global Roster", dependencies=[Depends(check_credentials)])
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
