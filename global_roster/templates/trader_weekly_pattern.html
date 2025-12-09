@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Weekly pattern & preferences – {{ trader.name }}</h1>
+  <p><a href="/traders">← Back to Traders</a></p>
+  {% include "partials/_trader_weekly_pattern_inner.html" %}
+  <script src="/static/weekly_pattern.js"></script>
+{% endblock %}
+

@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1 class="page-title">Management</h1>
+  <p class="page-subtitle">
+    Use these tools to manage traders, preferences and requests.
+  </p>
+
+  <div class="mgmt-card-grid">
+    <!-- Manage Traders -->
+    <div class="mgmt-card">
+      <div class="mgmt-card-icon">
+        <span>👤</span>
+      </div>
+      <div class="mgmt-card-body">
+        <h2 class="mgmt-card-title">Manage Traders</h2>
+        <p class="mgmt-card-text">
+          Add new traders, remove active traders, or view trader bios.
+        </p>
+        <div class="mgmt-card-actions">
+          <button
+            type="button"
+            class="btn-primary mgmt-card-button"
+            id="btnAddTrader"
+          >
+            Add trader
+          </button>
+          <button
+            type="button"
+            class="btn-secondary mgmt-card-button"
+            id="btnRemoveTrader"
+          >
+            Remove trader
+          </button>
+          <a
+            href="/traders"
+            class="btn-secondary mgmt-card-button"
+          >
+            View traders
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- View All Requests -->
+    <div class="mgmt-card">
+      <div class="mgmt-card-icon">
+        <span>📝</span>
+      </div>
+      <div class="mgmt-card-body">
+        <h2 class="mgmt-card-title">All Requests</h2>
+        <p class="mgmt-card-text">
+          See all trader requests (in/out) across all locations.
+        </p>
+        <button
+          type="button"
+          class="btn-primary mgmt-card-button"
+          id="mgmt-view-requests-btn"
+        >
+          View requests
+        </button>
+      </div>
+    </div>
+
+    <!-- Daily Resources -->
+    <div class="mgmt-card">
+      <div class="mgmt-card-icon">
+        <span>📅</span>
+      </div>
+      <div class="mgmt-card-body">
+        <h2 class="mgmt-card-title">Daily Resources</h2>
+        <p class="mgmt-card-text">
+          View trader availability for a specific day.
+        </p>
+        <div class="mgmt-card-actions">
+          <a
+            href="{{ request.url_for('daily_resources_page') }}"
+            class="btn-primary mgmt-card-button"
+          >
+            View day
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Requests Section (Hidden by default) -->
+  <div id="mgmt-requests-section" class="mgmt-requests-section" style="display: none;">
+    <hr class="mt-4 mb-3" />
+    <h2 class="management-section-title">All Requests</h2>
+    <p class="management-section-subtitle">
+      View all trader requests (in/out) across all locations.
+    </p>
+
+    <div class="management-requests-table-wrapper">
+      <table class="management-requests-table">
+        <thead>
+          <tr>
+            <th>Trader</th>
+            <th>Request Type</th>
+            <th>Manager</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Days</th>
+            <th>More Info</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in requests %}
+          {% set days = (req.date_to - req.date_from).days + 1 %}
+          {% set date_display = req.date_from.strftime('%Y-%m-%d') if req.date_from == req.date_to else req.date_from.strftime('%Y-%m-%d') + ' → ' + req.date_to.strftime('%Y-%m-%d') %}
+          {% set type_display = 'Request In' if req.request_kind == 'REQUEST_IN' else ('Request Off (Day)' if req.request_kind == 'REQUEST_OFF_DAY' else ('Request Off (Range)' if req.request_kind == 'REQUEST_OFF_RANGE' else req.request_kind)) %}
+          <tr>
+            <td>
+              {% if req.trader %}
+                {{ req.trader.name }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>{{ type_display }}</td>
+            <td>
+              {% if req.trader and req.trader.manager %}
+                {{ req.trader.manager }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              <span class="status-{{ req.status.lower() }}">{{ req.status }}</span>
+            </td>
+            <td>{{ date_display }}</td>
+            <td>{{ days }}</td>
+            <td class="cell-center">
+              <button
+                type="button"
+                class="btn-bio"
+                data-request-id="{{ req.id }}"
+                data-request-date-from="{{ req.date_from.strftime('%Y-%m-%d') }}"
+                data-request-date-to="{{ req.date_to.strftime('%Y-%m-%d') }}"
+                data-request-days="{{ days }}"
+                data-request-type="{{ type_display }}"
+                data-request-kind="{{ req.request_kind }}"
+                data-request-effect="{{ req.effect_type }}"
+                data-request-shift="{{ req.shift_type or '' }}"
+                data-request-sport="{{ req.sport_code or '' }}"
+                data-request-destination="{{ req.destination or '' }}"
+                data-request-reason="{{ req.reason or '' }}"
+                data-request-alias="{% if req.trader %}{{ req.trader.alias }}{% endif %}"
+                data-request-location="{% if req.trader %}{{ req.trader.location }}{% endif %}"
+              >
+                MORE INFO
+              </button>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7">No requests found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Trader Modal -->
+  <div id="addTraderModal" class="modal-backdrop" hidden></div>
+  <div id="addTraderModalContainer" class="modal" hidden>
+    <div class="modal-content bio-modal">
+      <div class="modal-header">
+        <h2>Add trader</h2>
+        <button type="button" class="modal-close" id="btnCloseAddTrader">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="/traders">
+          <input type="hidden" name="redirect_to" value="/management">
+
+          <div class="form-row">
+            <label for="modal-first_name">First name *</label>
+            <input type="text" id="modal-first_name" name="first_name" maxlength="50" required>
+          </div>
+
+          <div class="form-row">
+            <label for="modal-last_name">Last name *</label>
+            <input type="text" id="modal-last_name" name="last_name" maxlength="50" required>
+          </div>
+
+          <div class="form-row">
+            <label for="modal-location">Location *</label>
+            <select id="modal-location" name="location" required>
+              <option value="">-- Select location --</option>
+              {% for loc in locations %}
+                <option value="{{ loc.code }}">{{ loc.code }}</option>
+              {% endfor %}
+              <option value="__add_location__">+ Add location…</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="modal-alias">Alias *</label>
+            <input type="text" id="modal-alias" name="alias" maxlength="15" required>
+          </div>
+
+          <div class="form-row">
+            <label for="modal-manager">Manager</label>
+            <input type="text" id="modal-manager" name="manager" maxlength="50">
+          </div>
+
+          <div class="form-row">
+            <label for="modal-level">Level</label>
+            <input type="number" id="modal-level" name="level" min="1" max="10">
+          </div>
+
+          <div class="form-row">
+            <label for="modal-user_role">Role</label>
+            <select id="modal-user_role" name="user_role">
+              <option value="USER">User</option>
+              <option value="OWNER">Owner</option>
+              <option value="MANAGER">Manager</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="modal-primary_sport">Primary sport</label>
+            <select id="modal-primary_sport" name="primary_sport">
+              <option value="">-- None --</option>
+              {% for sport in sports %}
+                <option value="{{ sport.code }}">{{ sport.code }}</option>
+              {% endfor %}
+              <option value="__add_sport__">+ Add sport…</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="modal-secondary_sport">Secondary sport</label>
+            <select id="modal-secondary_sport" name="secondary_sport">
+              <option value="">-- None --</option>
+              {% for sport in sports %}
+                <option value="{{ sport.code }}">{{ sport.code }}</option>
+              {% endfor %}
+              <option value="__add_sport__">+ Add sport…</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="modal-required_days_per_week">Required days/week</label>
+            <input type="number" id="modal-required_days_per_week" name="required_days_per_week" min="1" max="7" value="5">
+          </div>
+
+          <div class="form-row">
+            <label for="modal-hours_per_week">Hours/week</label>
+            <input type="number" id="modal-hours_per_week" name="hours_per_week" min="0" max="80">
+          </div>
+
+          <div class="form-row">
+            <label for="modal-start_date">Start date</label>
+            <input type="date" id="modal-start_date" name="start_date">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="btnCancelAddTrader">Cancel</button>
+            <button type="submit" class="btn-primary">Save trader</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Request Info Modal -->
+  <div id="request-info-modal-backdrop" class="modal-backdrop" hidden></div>
+  <div id="request-info-modal" class="modal fade uniform-modal" hidden tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header uniform-modal-header">
+          <h5 class="modal-title">Request Details</h5>
+          <button type="button" id="request-info-close" class="uniform-modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body uniform-modal-body">
+          <div class="bio-field-row">
+            <span class="bio-label">Trader:</span>
+            <span class="bio-value" id="request-info-trader"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Alias:</span>
+            <span class="bio-value" id="request-info-alias"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Location:</span>
+            <span class="bio-value" id="request-info-location"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Request Type:</span>
+            <span class="bio-value" id="request-info-type"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Effect Type:</span>
+            <span class="bio-value" id="request-info-effect"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Date From:</span>
+            <span class="bio-value" id="request-info-date-from"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Date To:</span>
+            <span class="bio-value" id="request-info-date-to"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Days:</span>
+            <span class="bio-value" id="request-info-days"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Shift:</span>
+            <span class="bio-value" id="request-info-shift"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Sport:</span>
+            <span class="bio-value" id="request-info-sport"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Destination:</span>
+            <span class="bio-value" id="request-info-destination"></span>
+          </div>
+          <div class="bio-field-row">
+            <span class="bio-label">Reason:</span>
+            <span class="bio-value" id="request-info-reason"></span>
+          </div>
+        </div>
+        <div class="modal-footer uniform-modal-footer">
+          <button type="button" class="btn-secondary" id="request-info-close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Remove Trader Modal -->
+  <div id="removeTraderModal" class="modal-backdrop" hidden></div>
+  <div id="removeTraderModalContainer" class="modal" hidden>
+    <div class="modal-content bio-modal">
+      <div class="modal-header">
+        <h2>Remove Trader</h2>
+        <button type="button" class="modal-close" id="btnCloseRemoveTrader">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">
+          Select an active trader to mark as inactive. They will no longer appear in the main roster.
+        </p>
+        <div class="form-row">
+          <label for="removeTraderSelect">Trader</label>
+          <select id="removeTraderSelect">
+            <option value="">-- Select trader --</option>
+            {% for t in active_traders %}
+            <option value="{{ t.id }}">
+              {{ t.name }} ({{ t.alias }}) – {{ t.location }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btnCancelRemoveTrader">Cancel</button>
+        <button type="button" class="btn-primary" id="confirmRemoveTraderBtn">Set inactive</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/management.js"></script>
+{% endblock %}
+

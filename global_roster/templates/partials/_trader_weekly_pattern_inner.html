@@ -1,0 +1,71 @@
+<section class="weekly-pattern">
+  <table class="table weekly-pattern-grid" data-trader-id="{{ trader.id }}">
+    <thead>
+      <tr>
+        <th>Day</th>
+        <th>Full</th>
+        <th>Early</th>
+        <th>Mid</th>
+        <th>Late</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for day in days %}
+      <tr>
+        <td>{{ day.label }}</td>
+        {% for shift in day.shifts %}
+        <td>
+          <button type="button"
+                  class="wp-cell wp-{{ shift.state }}"
+                  data-day="{{ day.index }}"
+                  data-shift="{{ shift.type }}"
+                  data-state="{{ shift.state }}">
+            {% if shift.state != "indifferent" %}X{% endif %}
+          </button>
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="days-off-preference">
+    <h2>Days-off preference</h2>
+    <label>
+      <input type="radio"
+             name="days_off_preference"
+             value="NONE"
+             {% if days_off_preference == "NONE" %}checked{% endif %}>
+      No preference (0)
+    </label>
+    <label>
+      <input type="radio"
+             name="days_off_preference"
+             value="BACK_TO_BACK"
+             {% if days_off_preference == "BACK_TO_BACK" %}checked{% endif %}>
+      Prefer back-to-back days off (+2)
+    </label>
+    <label>
+      <input type="radio"
+             name="days_off_preference"
+             value="SPLIT"
+             {% if days_off_preference == "SPLIT" %}checked{% endif %}>
+      Prefer split days off (-2)
+    </label>
+  </div>
+
+  <button type="button" class="btn-primary" id="wp-save-btn">
+    Save pattern & preferences
+  </button>
+
+  <p class="wp-legend">
+    <span class="wp-box wp-preferred_shift">X</span> Preferred shift &nbsp;
+    <span class="wp-box wp-preferred_not_work">X</span> Prefer not to work &nbsp;
+    <span class="wp-box wp-absolute_no">X</span> Absolute no
+  </p>
+</section>
+
+
+
+
+

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1 class="page-title">Daily Resources</h1>
+  <p class="page-subtitle">
+    Select a date to see each trader's availability status.
+  </p>
+
+  <div class="page-section">
+    <form class="daily-filters" method="get" action="{{ request.url_for('daily_resources_page') }}">
+      <div class="filter-group">
+        <label for="dailyDate">Date</label>
+        <input
+          type="date"
+          id="dailyDate"
+          name="date"
+          value="{{ selected_date.isoformat() }}"
+          required
+        />
+      </div>
+      <div class="filter-group">
+        <label for="dailyLocation">Location</label>
+        <select id="dailyLocation" name="location">
+          <option value="" {% if not selected_location %}selected{% endif %}>All locations</option>
+          {% for loc in locations %}
+            <option
+              value="{{ loc.code }}"
+              {% if selected_location == loc.code %}selected{% endif %}
+            >
+              {{ loc.code }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button type="submit" class="btn-primary">View report</button>
+      </div>
+    </form>
+
+    <div class="table-scroll">
+      <table class="daily-resources-table">
+        <thead>
+          <tr>
+            <th>Trader</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              <td class="nowrap">
+                {{ row.name }}{% if row.alias %} ({{ row.alias }}){% endif %}
+              </td>
+              <td>{{ row.location }}</td>
+              <td>
+                <span class="status-badge status-{{ row.status | lower | replace(' ', '-') }}">
+                  {{ row.status }}
+                </span>
+              </td>
+              <td>{{ row.reason }}</td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="4">No traders found for this selection.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+

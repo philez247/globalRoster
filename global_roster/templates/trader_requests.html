@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Requests for {{ trader.name }}</h1>
+  {% include "partials/_trader_requests_inner.html" %}
+  <script src="/static/trader_requests.js"></script>
+{% endblock %}
+

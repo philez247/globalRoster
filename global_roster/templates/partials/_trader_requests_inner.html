@@ -1,0 +1,121 @@
+<section>
+  <h2>Add New Request</h2>
+  {% if error_message %}
+  <div class="alert alert-error">{{ error_message }}</div>
+  {% endif %}
+  <form method="POST" action="/traders/{{ trader.id }}/requests" id="request-form">
+    <div class="form-row" id="group-request-type">
+      <label for="requestType">Request Type *</label>
+      <select id="requestType" name="request_kind" required>
+        <option value="">-- Select --</option>
+        <option value="REQUEST_IN">Request In</option>
+        <option value="REQUEST_OFF_DAY">Request Off (Day)</option>
+        <option value="REQUEST_OFF_RANGE">Request Off (Range)</option>
+      </select>
+    </div>
+    
+    <div class="form-row" id="group-date-from" hidden>
+      <label for="date_from">Date From *</label>
+      <input type="date" id="date_from" name="date_from" required>
+    </div>
+    
+    <div class="form-row" id="group-date-to" hidden>
+      <label for="date_to">Date To *</label>
+      <input type="date" id="date_to" name="date_to">
+    </div>
+    
+    <div class="form-row" id="group-shift" hidden>
+      <label for="shift_type">Shift</label>
+      <select id="shift_type" name="shift_type">
+        <option value="">-- Whole Day --</option>
+        <option value="FULL">FULL</option>
+        <option value="EARLY">EARLY</option>
+        <option value="MID">MID</option>
+        <option value="LATE">LATE</option>
+        <option value="HALF_AM">HALF_AM</option>
+        <option value="HALF_PM">HALF_PM</option>
+      </select>
+    </div>
+    
+    <div class="form-row" id="group-sport" hidden>
+      <label for="sport_code">Sport (optional)</label>
+      <input type="text" id="sport_code" name="sport_code" maxlength="20">
+    </div>
+    
+    <div class="form-row" id="group-reason" hidden>
+      <label for="reason">Reason (optional)</label>
+      <textarea id="reason" name="reason" rows="3" maxlength="500"></textarea>
+    </div>
+    
+    <div class="form-row">
+      <button type="submit">Submit Request</button>
+    </div>
+  </form>
+</section>
+
+<section>
+  <h2>Existing Requests</h2>
+  {% if requests %}
+  <table>
+    <thead>
+      <tr>
+        <th>Date From</th>
+        <th>Date To</th>
+        <th>Days</th>
+        <th>Type</th>
+        <th>Comment</th>
+        <th>Status</th>
+        <th>Cancel</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in requests %}
+      <tr>
+        <td>{{ req.date_from.strftime('%Y-%m-%d') }}</td>
+        <td>{{ req.date_to.strftime('%Y-%m-%d') }}</td>
+        <td>{{ (req.date_to - req.date_from).days + 1 }}</td>
+        <td>
+          {% if req.request_kind == "REQUEST_IN" %}
+            Request In
+          {% elif req.request_kind == "REQUEST_OFF_DAY" %}
+            Request Off (Day)
+          {% elif req.request_kind == "REQUEST_OFF_RANGE" %}
+            Request Off (Range)
+          {% else %}
+            {{ req.request_kind }}
+          {% endif %}
+        </td>
+        <td>
+          {% set parts = [] %}
+          {% if req.sport_code %}
+            {% set _ = parts.append(req.sport_code) %}
+          {% endif %}
+          {% if req.shift_type %}
+            {% set _ = parts.append(req.shift_type) %}
+          {% endif %}
+          {% if parts %}
+            <strong>{{ parts|join(" ") }}</strong>
+            {% if req.reason %} – {{ req.reason }}{% endif %}
+          {% else %}
+            {{ req.reason or "" }}
+          {% endif %}
+        </td>
+        <td>
+          <span class="status-{{ req.status.lower() }}">{{ req.status }}</span>
+        </td>
+        <td class="requests-actions">
+          {% if req.status == "PENDING" %}
+          <button type="button" class="btn-delete" data-request-id="{{ req.id }}">Cancel</button>
+          {% else %}
+          <span class="requests-no-action">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No requests found.</p>
+  {% endif %}
+</section>
+

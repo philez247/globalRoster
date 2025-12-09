@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+{% block content %}
+  <div id="sports-data" data-sports='{{ sports | tojson }}' hidden></div>
+  <section class="page-section">
+    <h1 class="page-title">FanDuel Trading</h1>
+
+    <div class="traders-table-wrapper">
+      <table id="traders-table" class="traders-table">
+        <thead>
+          <tr>
+            <th data-sort="name" class="sortable">Name</th>
+            <th data-sort="alias" class="sortable">Alias</th>
+            <th data-sort="location" class="sortable">Location</th>
+            <th>Bio</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trader in traders %}
+          <tr>
+            <td class="cell-name">{{ trader.name }}</td>
+            <td class="cell-alias">{{ trader.alias }}</td>
+            <td class="cell-center">{{ trader.location }}</td>
+            <td class="cell-center">
+              <button
+                type="button"
+                class="btn-bio"
+                data-trader-id="{{ trader.id }}"
+              >
+                BIO
+              </button>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4">No traders found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- BIO Modal -->
+  <div id="bio-modal" class="modal fade uniform-modal bio-modal" hidden tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header uniform-modal-header">
+          <h5 class="modal-title" id="bio-name">Trader BIO</h5>
+          <button type="button" id="bio-close" class="uniform-modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body uniform-modal-body">
+        <div class="bio-field-row">
+          <span class="bio-label">Name:</span>
+          <span class="bio-value" id="bio-name-field"></span>
+        </div>
+        <div class="bio-field-row">
+          <span class="bio-label">Alias:</span>
+          <span class="bio-value" id="bio-alias"></span>
+        </div>
+        <div class="bio-field-row">
+          <span class="bio-label">Manager:</span>
+          <span class="bio-value" id="bio-manager"></span>
+        </div>
+        <div class="bio-field-row">
+          <span class="bio-label">Level:</span>
+          <span class="bio-value" id="bio-level"></span>
+        </div>
+        <div class="bio-field-row">
+          <span class="bio-label">Role:</span>
+          <span class="bio-value" id="bio-user-role"></span>
+        </div>
+        <div class="bio-field-row">
+          <span class="bio-label">Location:</span>
+          <span class="bio-value" id="bio-location"></span>
+        </div>
+        <div class="bio-field-row">
+          <span class="bio-label">Days / Hours:</span>
+          <span class="bio-value" id="bio-days-hours"></span>
+        </div>
+        <div class="bio-field-row">
+          <span class="bio-label">Active:</span>
+          <span class="bio-value" id="bio-active"></span>
+        </div>
+        <div class="bio-field-row">
+          <span class="bio-label">Primary Sport:</span>
+          <span class="bio-value" id="bio-primary-sport"></span>
+        </div>
+        <div class="bio-field-row">
+          <span class="bio-label">Secondary Sport:</span>
+          <span class="bio-value" id="bio-secondary-sport"></span>
+        </div>
+        </div>
+        <div class="modal-footer uniform-modal-footer">
+          <button type="button" class="btn-primary" id="btnEdit">Edit</button>
+          <button type="button" class="btn-primary" id="btnRequests">Requests</button>
+          <button type="button" class="btn-primary" id="btnPreferences">Preferences</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Trader Modal -->
+  <div id="edit-trader-modal-backdrop" class="modal-backdrop" hidden></div>
+  <div id="edit-trader-modal" class="modal" hidden>
+    <div class="modal-content bio-modal">
+      <div class="modal-header">
+        <h2>Edit Trader</h2>
+        <button type="button" id="edit-trader-close" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-trader-form">
+          <div class="form-row">
+            <label for="edit-location">Location *</label>
+            <input type="text" id="edit-location" name="location" required>
+          </div>
+          <div class="form-row">
+            <label for="edit-alias">Alias *</label>
+            <input type="text" id="edit-alias" name="alias" required>
+          </div>
+          <div class="form-row">
+            <label for="edit-manager">Manager</label>
+            <input type="text" id="edit-manager" name="manager">
+          </div>
+
+          <div class="form-row">
+            <h3>Primary Sport</h3>
+            <div class="sport-level-row">
+              <select id="edit-primary-sport" name="primary_sport" class="sport-dropdown">
+                <option value="">-- None --</option>
+                <!-- Options will be populated by JavaScript -->
+              </select>
+              <select id="edit-primary-level" name="primary_level" class="level-dropdown">
+                <option value="">-- Level --</option>
+                <option value="1">L1</option>
+                <option value="2">L2</option>
+                <option value="3">L3</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <h3>Secondary Sport</h3>
+            <div class="sport-level-row">
+              <select id="edit-secondary-sport" name="secondary_sport" class="sport-dropdown">
+                <option value="">-- None --</option>
+                <!-- Options will be populated by JavaScript -->
+              </select>
+              <select id="edit-secondary-level" name="secondary_level" class="level-dropdown">
+                <option value="">-- Level --</option>
+                <option value="1">L1</option>
+                <option value="2">L2</option>
+                <option value="3">L3</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <h3>Sports & Levels</h3>
+            <table id="sportsTable" class="sports-table">
+              <thead>
+                <tr>
+                  <th>Sport</th>
+                  <th>Level</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="sportsTableBody">
+                <!-- Rows will be populated by JavaScript -->
+              </tbody>
+            </table>
+            <button type="button" class="btn-secondary" id="addSportRow">Add Sport</button>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="edit-trader-save">Save</button>
+        <button type="button" class="btn-secondary" id="edit-trader-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+
+  <!-- Requests Modal -->
+  <div id="requests-modal-backdrop" class="modal-backdrop" hidden></div>
+  <div id="requests-modal" class="modal fade uniform-modal requests-modal" hidden tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header uniform-modal-header">
+          <h5 class="modal-title" id="requests-modal-title">Requests</h5>
+          <button type="button" id="requests-modal-close" class="uniform-modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body uniform-modal-body">
+          <div id="requests-error-message" class="alert alert-error" hidden></div>
+          
+          <!-- Add New Request Form -->
+          <section class="requests-form-section">
+          <form id="requests-form">
+            <div class="form-row" id="group-request-type">
+              <label for="requestType">Request Type *</label>
+              <select id="requestType" name="request_kind" required>
+                <option value="">-- Select --</option>
+                <option value="REQUEST_IN">Request In</option>
+                <option value="REQUEST_OFF_DAY">Request Off (Day)</option>
+                <option value="REQUEST_OFF_RANGE">Request Off (Range)</option>
+              </select>
+            </div>
+            
+            <div class="form-row" id="group-date-from" hidden>
+              <label for="date_from">Date From *</label>
+              <input type="date" id="date_from" name="date_from" required>
+            </div>
+            
+            <div class="form-row" id="group-date-to" hidden>
+              <label for="date_to">Date To *</label>
+              <input type="date" id="date_to" name="date_to">
+            </div>
+            
+            <div class="form-row" id="group-shift" hidden>
+              <label for="shift_type">Shift</label>
+              <select id="shift_type" name="shift_type">
+                <option value="">-- Whole Day --</option>
+                <option value="FULL">FULL</option>
+                <option value="EARLY">EARLY</option>
+                <option value="MID">MID</option>
+                <option value="LATE">LATE</option>
+                <option value="HALF_AM">HALF_AM</option>
+                <option value="HALF_PM">HALF_PM</option>
+              </select>
+            </div>
+            
+            <div class="form-row" id="group-sport" hidden>
+              <label for="sport_code">Sport (optional)</label>
+              <input type="text" id="sport_code" name="sport_code" maxlength="20">
+            </div>
+            
+            <div class="form-row" id="group-reason" hidden>
+              <label for="reason">Reason (optional)</label>
+              <textarea id="reason" name="reason" rows="3" maxlength="500"></textarea>
+            </div>
+            
+            <div class="form-row">
+              <button type="submit">Submit Request</button>
+            </div>
+          </form>
+          </section>
+
+          <!-- Existing Requests Section (Hidden by default) -->
+          <section class="requests-list-section">
+            <h6>Existing Requests</h6>
+            <div style="margin-top: 1rem;">
+              <button type="button" id="toggle-existing-requests" class="btn-secondary">Show existing requests</button>
+              <div id="existing-requests-container" hidden>
+                <div style="display: flex; gap: 1rem; margin-top: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                  <div class="form-row" style="margin-bottom: 0; flex: 1; min-width: 150px;">
+                    <label for="filter-status">Filter by Status:</label>
+                    <select id="filter-status" style="max-width: 200px;">
+                      <option value="">All</option>
+                      <option value="PENDING">Pending</option>
+                      <option value="APPROVED">Approved</option>
+                      <option value="REJECTED">Rejected</option>
+                    </select>
+                  </div>
+                  <div class="form-row" style="margin-bottom: 0; flex: 1; min-width: 150px;">
+                    <label for="sort-date">Sort by Date:</label>
+                    <select id="sort-date" style="max-width: 200px;">
+                      <option value="upcoming">Upcoming</option>
+                      <option value="past">Past</option>
+                    </select>
+                  </div>
+                </div>
+                <!-- Table view -->
+                <div id="existing-requests-table-wrapper" class="requests-table-wrapper">
+                  <table id="existing-requests-table">
+                    <thead>
+                      <tr>
+                        <th>Date From</th>
+                        <th>Days</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>View</th>
+                      </tr>
+                    </thead>
+                    <tbody id="existing-requests-tbody">
+                      <!-- Populated by JavaScript -->
+                    </tbody>
+                  </table>
+                </div>
+                <p id="no-requests-message" hidden>No requests found.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="modal-footer uniform-modal-footer">
+          <button type="button" id="requests-modal-footer-close" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Request Details Modal (for View button) -->
+  <div id="request-details-modal-backdrop" class="modal-backdrop" hidden></div>
+  <div id="request-details-modal" class="modal" hidden>
+    <div class="modal-content bio-modal">
+      <div class="modal-header">
+        <h2 id="request-details-title">View</h2>
+        <button type="button" id="request-details-close" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Date From:</strong> <span id="request-details-date-from"></span></p>
+        <p><strong>Date To:</strong> <span id="request-details-date-to"></span></p>
+        <p><strong>Days:</strong> <span id="request-details-days"></span></p>
+        <p><strong>Type:</strong> <span id="request-details-type"></span></p>
+        <p><strong>Date Submitted:</strong> <span id="request-details-date-submitted"></span></p>
+        <p><strong>Status:</strong> <span id="request-details-status"></span></p>
+        <p id="request-details-approved-section" hidden><strong>Approved By:</strong> <span id="request-details-approved-by"></span></p>
+        <p id="request-details-approved-date-section" hidden><strong>Approved At:</strong> <span id="request-details-approved-at"></span></p>
+        <p><strong>Comments:</strong></p>
+        <div id="request-details-comments" style="margin-top: 0.5rem; padding: 0.75rem; background: #f8f9fa; border-radius: 4px; white-space: pre-wrap;"></div>
+        <div id="request-details-cancel-section" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e1ecf7;">
+          <button type="button" id="request-details-cancel-btn" class="btn-delete" hidden>Cancel Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly Pattern Modal -->
+  <div id="weekly-pattern-modal-backdrop" class="modal-backdrop" hidden></div>
+  <div id="weekly-pattern-modal" class="modal fade uniform-modal preferences-modal" hidden tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header uniform-modal-header">
+          <h5 class="modal-title" id="weekly-pattern-modal-title">Weekly Pattern & Preferences</h5>
+          <button type="button" id="weekly-pattern-modal-close" class="uniform-modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body uniform-modal-body">
+          <section class="weekly-pattern">
+            <table class="table weekly-pattern-grid" id="wp-modal-grid">
+            <colgroup>
+              <col style="width: 20%;">
+              <col style="width: 20%;">
+              <col style="width: 20%;">
+              <col style="width: 20%;">
+              <col style="width: 20%;">
+            </colgroup>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Sport</th>
+                <th>Day</th>
+                <th>Early</th>
+                <th>Late</th>
+              </tr>
+            </thead>
+            <tbody id="wp-modal-grid-body">
+              <!-- Grid will be populated by JavaScript -->
+            </tbody>
+          </table>
+
+          <div class="wp-legend">
+            <span class="wp-box wp-preferred_shift">✓</span> Preferred Shift &nbsp;
+            <span class="wp-box wp-preferred_not_work">O</span> Prefer Not To Work &nbsp;
+            <span class="wp-box wp-absolute_no">X</span> Day OFF
+          </div>
+
+          <div class="days-off-preference">
+            <label for="wp-days-off-dropdown">Days-off preference:</label>
+            <select id="wp-days-off-dropdown" name="wp-days_off_preference">
+              <option value="NONE">No Preference</option>
+              <option value="BACK_TO_BACK">Back To Back Days Off</option>
+              <option value="SPLIT">Split Days Off</option>
+            </select>
+          </div>
+
+          </section>
+        </div>
+        <div class="modal-footer uniform-modal-footer">
+          <button type="button" class="btn-secondary" id="wp-modal-reset-btn">
+            Reset
+          </button>
+          <button type="button" class="btn-secondary" id="wp-modal-cancel-btn">
+            Cancel
+          </button>
+          <button type="button" class="btn-primary" id="wp-modal-save-btn">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/traders.js"></script>
+  <script src="/static/requests_modal.js"></script>
+  <script src="/static/weekly_pattern_modal.js"></script>
+{% endblock %}
+

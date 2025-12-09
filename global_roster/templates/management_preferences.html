@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Trader preferences – days-off grouping</h1>
+
+  <p><a href="/management">← Back to Management</a></p>
+
+  <section class="card">
+    {% if preferences %}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Trader</th>
+            <th>Location</th>
+            <th>Days-off preference</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in preferences %}
+          <tr>
+            <td>{{ row.name }}</td>
+            <td>{{ row.location }}</td>
+            <td>{{ row.days_off_label }}</td>
+            <td>
+              <button type="button" class="btn-secondary" 
+                      onclick="openWeeklyPatternFromManagement({{ row.id }}, '{{ row.name }}')">
+                Edit pattern
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No traders found.</p>
+    {% endif %}
+  </section>
+
+  <!-- Weekly Pattern Fullscreen Modal -->
+  {% include "modals/weekly_pattern_modal.html" %}
+
+  <script src="/static/weekly_pattern_modal.js"></script>
+  <script>
+    function openWeeklyPatternFromManagement(traderId, traderName) {
+      if (window.openWeeklyPatternModal) {
+        window.openWeeklyPatternModal(traderId, traderName, null);
+      }
+    }
+  </script>
+{% endblock %}
+

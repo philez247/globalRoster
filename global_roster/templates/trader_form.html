@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Create Trader</h1>
+
+  <form method="post" action="/traders" class="trader-form">
+    <div class="form-row">
+      <label for="name">Trader name</label>
+      <input type="text" id="name" name="name" maxlength="50" required>
+    </div>
+    
+    <div class="form-row">
+      <label for="location">Location</label>
+      <select id="location" name="location" required>
+        <option value="">-- Select location --</option>
+        {% for loc in locations %}
+          <option value="{{ loc.code }}">{{ loc.code }}</option>
+        {% endfor %}
+        <option value="__add_location__">+ Add location…</option>
+      </select>
+    </div>
+    
+    <div class="form-row">
+      <label for="manager">Manager</label>
+      <input type="text" id="manager" name="manager" maxlength="50">
+    </div>
+    
+    <div class="form-row">
+      <label for="level">Level</label>
+      <input type="number" id="level" name="level" min="1">
+    </div>
+    
+    <div class="form-row">
+      <label for="primary_sport">Primary sport</label>
+      <select id="primary_sport" name="primary_sport">
+        <option value="">-- None --</option>
+        {% for sport in sports %}
+          <option value="{{ sport.code }}">{{ sport.code }}</option>
+        {% endfor %}
+        <option value="__add_sport__">+ Add sport…</option>
+      </select>
+    </div>
+    
+    <div class="form-row">
+      <label for="secondary_sport">Secondary sport</label>
+      <select id="secondary_sport" name="secondary_sport">
+        <option value="">-- None --</option>
+        {% for sport in sports %}
+          <option value="{{ sport.code }}">{{ sport.code }}</option>
+        {% endfor %}
+        <option value="__add_sport__">+ Add sport…</option>
+      </select>
+    </div>
+    
+    <div class="form-row">
+      <label for="required_days_per_week">Required days/week</label>
+      <input type="number" id="required_days_per_week" name="required_days_per_week" min="1" max="7" value="5">
+    </div>
+    
+    <div class="form-row">
+      <label for="hours_per_week">Hours/week</label>
+      <input type="number" id="hours_per_week" name="hours_per_week" min="0">
+    </div>
+    
+    <div class="form-row">
+      <label for="start_date">Start date</label>
+      <input type="date" id="start_date" name="start_date">
+    </div>
+    
+    <div class="form-row">
+      <button type="submit">Create trader</button>
+    </div>
+  </form>
+  <script src="/static/management.js"></script>
+{% endblock %}
+
