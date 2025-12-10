@@ -3,9 +3,9 @@ import secrets
 from datetime import datetime, timedelta
 from fastapi import HTTPException, Request, status
 from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session as DBSession
 
-# Session storage (in production, use Redis or database)
-active_sessions = {}
+from global_roster.models.session import Session as SessionModel
 
 SESSION_COOKIE_NAME = "global_roster_session"
 SESSION_DURATION_HOURS = 12
@@ -16,32 +16,44 @@ def create_session() -> str:
     return secrets.token_urlsafe(32)
 
 
-def verify_session(session_token: str) -> bool:
+def verify_session(session_token: str, db: DBSession) -> bool:
     """Verify if a session token is valid."""
     if not session_token:
         return False
-    session_data = active_sessions.get(session_token)
-    if not session_data:
+    
+    # Query database for session
+    session = db.query(SessionModel).filter(SessionModel.token == session_token).first()
+    if not session:
         return False
+    
     # Check if session expired
-    if datetime.now() > session_data["expires_at"]:
-        del active_sessions[session_token]
+    if datetime.now() > session.expires_at:
+        # Remove expired session
+        db.delete(session)
+        db.commit()
         return False
+    
     return True
 
 
-def add_session(session_token: str):
+def add_session(session_token: str, db: DBSession):
     """Add a session with 12-hour expiration."""
     expires_at = datetime.now() + timedelta(hours=SESSION_DURATION_HOURS)
-    active_sessions[session_token] = {
-        "created_at": datetime.now(),
-        "expires_at": expires_at,
-    }
+    session = SessionModel(
+        token=session_token,
+        created_at=datetime.now(),
+        expires_at=expires_at,
+    )
+    db.add(session)
+    db.commit()
 
 
-def remove_session(session_token: str):
+def remove_session(session_token: str, db: DBSession):
     """Remove a session."""
-    active_sessions.pop(session_token, None)
+    session = db.query(SessionModel).filter(SessionModel.token == session_token).first()
+    if session:
+        db.delete(session)
+        db.commit()
 
 
 def check_credentials(username: str, password: str) -> bool:

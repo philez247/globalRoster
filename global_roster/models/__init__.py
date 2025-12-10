@@ -11,6 +11,7 @@ from .trader_request import (
     TraderRequestStatus,
 )
 from .config import LocationConfig, SportConfig
+from .session import Session
 
 __all__ = [
     "Base",
@@ -25,5 +26,6 @@ __all__ = [
     "TraderRequestStatus",
     "LocationConfig",
     "SportConfig",
+    "Session",
 ]
 

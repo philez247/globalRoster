@@ -16,6 +16,7 @@ from global_roster.models import (
     TraderRequest,
     LocationConfig,
     SportConfig,
+    Session,
 )  # noqa: F401
 # Import DATABASE_URL from config to ensure consistency
 from global_roster.core.config import DATABASE_URL

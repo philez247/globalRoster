@@ -5,6 +5,11 @@
   --fd-border: #c9d8e8;
   --fd-danger: #e55353;
   --fd-text-main: #102030;
+  /* Traders table column widths - mobile defaults (match current good phone view) */
+  --tr-col-name: 55%;
+  --tr-col-alias: 18%;
+  --tr-col-loc: 18%;
+  --tr-col-bio: 9%;
 }
 
 html, body {
@@ -54,6 +59,7 @@ body {
 .header-logo {
   height: 32px;
   width: auto;
+  border-radius: 8px;
 }
 
 .header-title {
@@ -1345,6 +1351,26 @@ table td form {
   text-align: left;
 }
 
+.traders-table thead th.col-name,
+.traders-table tbody td.col-name {
+  width: var(--tr-col-name);
+}
+
+.traders-table thead th.col-alias,
+.traders-table tbody td.col-alias {
+  width: var(--tr-col-alias);
+}
+
+.traders-table thead th.col-location,
+.traders-table tbody td.col-location {
+  width: var(--tr-col-loc);
+}
+
+.traders-table thead th.col-bio,
+.traders-table tbody td.col-bio {
+  width: var(--tr-col-bio);
+}
+
 .traders-table td.cell-center {
   text-align: center;
 }
@@ -2186,13 +2212,13 @@ table td form {
   /* Name gets most of the space */
   .traders-table thead th.col-name,
   .traders-table tbody td.col-name {
-    width: 55%;
+    width: var(--tr-col-name);
   }
 
   /* Alias + Location narrow but readable */
   .traders-table thead th.col-alias,
   .traders-table tbody td.col-alias {
-    width: 18%;
+    width: var(--tr-col-alias);
     text-align: center;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -2201,7 +2227,7 @@ table td form {
 
   .traders-table thead th.col-location,
   .traders-table tbody td.col-location {
-    width: 18%;
+    width: var(--tr-col-loc);
     text-align: center;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -2211,13 +2237,23 @@ table td form {
   /* Bio tiny column for the button */
   .traders-table thead th.col-bio,
   .traders-table tbody td.col-bio {
-    width: 9%;
+    width: var(--tr-col-bio);
     text-align: center;
   }
 
   .bio-button {
     padding: 0.15rem 0.3rem;
     font-size: 0.7rem;
+  }
+}
+
+/* Desktop overrides for column widths (desktop only) */
+@media (min-width: 901px) {
+  :root {
+    --tr-col-name: 60%;
+    --tr-col-alias: 14%;
+    --tr-col-loc: 14%;
+    --tr-col-bio: 12%;
   }
 }
 
