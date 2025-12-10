@@ -1,7 +1,163 @@
 {% extends "base.html" %}
-{% block content %}
-  <h1>Requests for {{ trader.name }}</h1>
-  {% include "partials/_trader_requests_inner.html" %}
-  <script src="/static/trader_requests.js"></script>
-{% endblock %}
 
+{% block content %}
+<div class="trader-requests-panel">
+    <h1 class="panel-title">Requests – {{ trader.alias }} ({{ trader.location }})</h1>
+
+    <!-- Create request form -->
+    <form method="post" class="request-form">
+        <div class="request-form-row">
+            <select id="request_type" name="request_type" required class="form-input request-type-select">
+                <option value="" disabled selected>Request Type</option>
+                <option value="REQUEST_IN">Request In (Day)</option>
+                <option value="REQUEST_OFF_DAY">Request Off (Day)</option>
+                <option value="REQUEST_OFF_RANGE">Request Off (Range)</option>
+            </select>
+        </div>
+
+        <div class="request-form-row" id="date-from-row">
+            <span class="date-label" id="from-label" style="display: none;">From:</span>
+            <input type="date" id="request_date_from" name="request_date_from" required class="form-input date-input">
+        </div>
+
+        <div class="request-form-row" id="date-to-row" style="display: none;">
+            <span class="date-label">To:</span>
+            <input type="date" id="request_date_to" name="request_date_to" class="form-input date-input">
+        </div>
+
+        <div class="request-form-row">
+            <textarea id="reason" name="reason" rows="2" class="form-textarea"
+                      placeholder="Reason (optional)"></textarea>
+        </div>
+
+        <div class="request-form-actions">
+            <button type="submit" class="btn-primary request-action-btn">Submit</button>
+            <button type="button" id="view-all-btn" class="btn-secondary request-action-btn">View All</button>
+            <a href="{{ url_for('trader_bio', trader_id=trader.id) }}" class="btn-secondary request-action-btn">Cancel</a>
+        </div>
+    </form>
+
+    <!-- Existing requests table - hidden by default -->
+    <div id="existing-requests" class="requests-table-wrapper" style="display: none;">
+        <div class="requests-filter-row">
+            <label for="status-filter" class="filter-label">Filter by Status:</label>
+            <select id="status-filter" class="status-filter-select">
+                <option value="">All Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Denied</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+        </div>
+
+        {% if requests and requests|length > 0 %}
+        <div class="requests-scroll">
+            <div class="requests-card-list">
+                {% for r in requests %}
+                <div class="request-card" data-status="{{ r.status }}">
+                    <div class="request-card-top">
+                        <div class="request-date">
+                            {% if r.date_from == r.date_to %}
+                                {{ r.date_from.strftime("%Y-%m-%d") }}
+                            {% else %}
+                                {{ r.date_from.strftime("%Y-%m-%d") }} to {{ r.date_to.strftime("%Y-%m-%d") }}
+                            {% endif %}
+                        </div>
+                        <div class="request-status">
+                            {{ r.status }}
+                        </div>
+                    </div>
+                    <div class="request-main-row">
+                        <span class="request-label">Type:</span>
+                        <span class="request-value">{{ r.request_kind }}</span>
+                    </div>
+                    <div class="request-card-details">
+                        <div class="request-main-row">
+                            <span class="request-label">Effect:</span>
+                            <span class="request-value">{{ r.effect_type }}</span>
+                        </div>
+                        {% if r.reason %}
+                        <div class="request-main-row">
+                            <span class="request-label">Reason:</span>
+                            <span class="request-value request-reason">{{ r.reason }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <p class="requests-empty">No requests for this trader yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle request card details on click
+    document.querySelectorAll('.request-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+            card.classList.toggle('open');
+        });
+    });
+
+    // Show/hide "To Date" field and labels based on request type selection
+    const requestTypeSelect = document.getElementById('request_type');
+    const dateFromRow = document.getElementById('date-from-row');
+    const dateToRow = document.getElementById('date-to-row');
+    const dateToInput = document.getElementById('request_date_to');
+    const fromLabel = document.getElementById('from-label');
+    
+    if (requestTypeSelect && dateToRow && dateToInput && fromLabel) {
+        requestTypeSelect.addEventListener('change', function() {
+            if (this.value === 'REQUEST_OFF_RANGE') {
+                // Show labels and "To Date" field for range
+                fromLabel.style.display = 'inline';
+                dateFromRow.style.flexDirection = 'row';
+                dateToRow.style.display = 'flex';
+                dateToInput.required = true;
+            } else {
+                // Hide labels and "To Date" field for single day
+                fromLabel.style.display = 'none';
+                dateFromRow.style.flexDirection = 'column';
+                dateToRow.style.display = 'none';
+                dateToInput.required = false;
+                dateToInput.value = '';
+            }
+        });
+    }
+
+    // Show/hide requests table when "View All" is clicked
+    const viewAllBtn = document.getElementById('view-all-btn');
+    const existingRequests = document.getElementById('existing-requests');
+    
+    if (viewAllBtn && existingRequests) {
+        viewAllBtn.addEventListener('click', function() {
+            if (existingRequests.style.display === 'none') {
+                existingRequests.style.display = 'block';
+                existingRequests.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                existingRequests.style.display = 'none';
+            }
+        });
+    }
+
+    // Filter requests by status
+    const statusFilter = document.getElementById('status-filter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            const selectedStatus = this.value;
+            document.querySelectorAll('.request-card').forEach(function(card) {
+                const cardStatus = card.getAttribute('data-status');
+                if (!selectedStatus || cardStatus === selectedStatus) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

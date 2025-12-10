@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="trader-bio-panel">
+    <h1 class="panel-title panel-title-centered">{{ trader.name }}</h1>
+
+    <div class="trader-bio-card">
+        <div class="bio-row">
+            <span class="bio-label">Name:</span>
+            <span class="bio-value">{{ trader.name }}</span>
+        </div>
+        <div class="bio-row">
+            <span class="bio-label">Alias:</span>
+            <span class="bio-value">{{ trader.alias }}</span>
+        </div>
+        <div class="bio-row">
+            <span class="bio-label">Level:</span>
+            <span class="bio-value">{{ trader.level or 'N/A' }}</span>
+        </div>
+        <div class="bio-row">
+            <span class="bio-label">Manager:</span>
+            <span class="bio-value">{{ trader.manager or 'N/A' }}</span>
+        </div>
+        <div class="bio-row">
+            <span class="bio-label">Days/Week:</span>
+            <span class="bio-value">{{ trader.required_days_per_week }}</span>
+        </div>
+        <div class="bio-row">
+            <span class="bio-label">Hours/Week:</span>
+            <span class="bio-value">{{ trader.hours_per_week or 'N/A' }}</span>
+        </div>
+        <div class="bio-row">
+            <span class="bio-label">Primary Sport:</span>
+            <span class="bio-value">{{ trader.primary_sport or 'N/A' }}</span>
+        </div>
+        <div class="bio-row">
+            <span class="bio-label">Secondary Sport:</span>
+            <span class="bio-value">{{ trader.secondary_sport or 'N/A' }}</span>
+        </div>
+    </div>
+
+    <div class="bio-actions">
+        <a href="{{ url_for('trader_requests', trader_id=trader.id) }}" class="btn-primary bio-action-btn">
+            Requests
+        </a>
+        <a href="{{ url_for('trader_preferences', trader_id=trader.id) }}" class="btn-primary bio-action-btn">
+            Preferences
+        </a>
+        <a href="{{ url_for('traders_page') }}" class="btn-secondary bio-action-btn">
+            Edit
+        </a>
+        <a href="{{ url_for('traders_page') }}" class="btn-secondary bio-action-btn">
+            Cancel
+        </a>
+    </div>
+</div>
+{% endblock %}
+

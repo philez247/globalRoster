@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="trader-prefs-panel">
+    <h1 class="panel-title">Preferences – {{ trader.alias }} ({{ trader.location }})</h1>
+
+    <form method="post" id="prefs-form" class="prefs-form">
+        <!-- Days-off grouping -->
+        <div class="days-off-group">
+            <select id="days_off_grouping" name="days_off_grouping" class="days-off-select">
+                <option value="NONE" {% if grouping_value == "NONE" %}selected{% endif %}>No preference</option>
+                <option value="BACK_TO_BACK" {% if grouping_value == "BACK_TO_BACK" %}selected{% endif %}>Back-to-back days off</option>
+                <option value="SPLIT" {% if grouping_value == "SPLIT" %}selected{% endif %}>Split days off</option>
+            </select>
+        </div>
+
+        <!-- Weekly pattern grid -->
+        <div class="prefs-grid">
+            <div class="prefs-grid-header">
+                <div class="prefs-grid-cell header-cell"></div>
+                {% for shift in shift_types %}
+                <div class="prefs-grid-cell header-cell">{{ shift }}</div>
+                {% endfor %}
+            </div>
+
+            {% for day_index in range(0,7) %}
+            <div class="prefs-grid-row">
+                <div class="prefs-grid-cell day-label">
+                    {{ days[day_index] }}
+                </div>
+
+                {% for shift in shift_types %}
+                    {% set key = (day_index, shift) %}
+                    {% set state = cell_states.get(key, "NONE") %}
+                    <div class="prefs-grid-cell">
+                        <button type="button"
+                                class="pref-cell pref-state-{{ state|lower }}"
+                                data-day="{{ day_index }}"
+                                data-shift="{{ shift }}"
+                                data-state="{{ state }}">
+                            <!-- Label per state will be set by CSS/JS -->
+                        </button>
+                        <input type="hidden"
+                               name="state_{{ day_index }}_{{ shift }}"
+                               value="{{ state }}">
+                    </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="prefs-actions">
+            <button type="submit" class="btn-primary prefs-action-btn">Save</button>
+            <button type="button" class="btn-secondary prefs-action-btn" onclick="document.getElementById('prefs-form').reset();">Reset</button>
+            <a href="{{ url_for('trader_bio', trader_id=trader.id) }}" class="btn-secondary prefs-action-btn">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Client-side cycling of cell states
+(function() {
+    const STATE_ORDER = ["NONE", "IN", "OFF", "BLOCK"];
+
+    function nextState(current) {
+        const idx = STATE_ORDER.indexOf(current);
+        if (idx === -1) return "NONE";
+        return STATE_ORDER[(idx + 1) % STATE_ORDER.length];
+    }
+
+    function updateCellAppearance(btn, state) {
+        btn.dataset.state = state;
+        btn.classList.remove("pref-state-none", "pref-state-in", "pref-state-off", "pref-state-block");
+        btn.classList.add("pref-state-" + state.toLowerCase());
+
+        if (state === "IN") {
+            btn.textContent = "✓ IN";
+        } else if (state === "OFF") {
+            btn.textContent = "OFF";
+        } else if (state === "BLOCK") {
+            btn.textContent = "X";
+        } else {
+            btn.textContent = "";
+        }
+    }
+
+    document.querySelectorAll(".pref-cell").forEach(function(btn) {
+        // initialise labels based on existing state
+        updateCellAppearance(btn, btn.dataset.state);
+
+        btn.addEventListener("click", function() {
+            const current = btn.dataset.state || "NONE";
+            const next = nextState(current);
+            updateCellAppearance(btn, next);
+
+            const day = btn.dataset.day;
+            const shift = btn.dataset.shift;
+            const hiddenName = "state_" + day + "_" + shift;
+            const hidden = document.querySelector('input[name="' + hiddenName + '"]');
+            if (hidden) {
+                hidden.value = next;
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}
+
