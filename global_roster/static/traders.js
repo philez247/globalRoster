@@ -478,12 +478,15 @@ document.addEventListener("DOMContentLoaded", () => {
       
       allRows.forEach(row => {
         const nameCell = row.querySelector("td.col-name");
+        const aliasCell = row.querySelector("td.col-alias");
         const locationCell = row.querySelector("td.col-location");
         
         const name = nameCell ? nameCell.textContent.toLowerCase() : "";
+        const alias = aliasCell ? aliasCell.textContent.toLowerCase() : "";
         const location = locationCell ? locationCell.textContent.trim() : "";
         
-        const matchesSearch = !searchTerm || name.includes(searchTerm);
+        // Match if search term is in name OR alias
+        const matchesSearch = !searchTerm || name.includes(searchTerm) || alias.includes(searchTerm);
         const matchesLocation = !selectedLocation || location === selectedLocation;
         
         row.style.display = (matchesSearch && matchesLocation) ? "" : "none";

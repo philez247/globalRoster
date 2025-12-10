@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - Global Roster</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f5f7fa;">
+        <div style="background: #ffffff; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(7, 39, 67, 0.08); max-width: 400px; width: 100%;">
+            <h1 style="margin-top: 0; margin-bottom: 1.5rem; color: var(--fd-navy); text-align: center;">FanDuel Trading Roster</h1>
+            
+            {% if error %}
+            <div style="background-color: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; border: 1px solid #f5c6cb;">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="post" action="/login">
+                <div style="margin-bottom: 1rem;">
+                    <label for="username" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Username:</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        required 
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--fd-border); border-radius: 4px; font-size: 1rem; box-sizing: border-box;"
+                        autofocus
+                    />
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Password:</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        required 
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--fd-border); border-radius: 4px; font-size: 1rem; box-sizing: border-box;"
+                    />
+                </div>
+                
+                <div style="margin-bottom: 1.5rem; font-size: 0.9rem; color: #6b7280; text-align: center;">
+                    Your session will be saved for 12 hours
+                </div>
+                
+                <button 
+                    type="submit" 
+                    style="width: 100%; padding: 0.75rem; background: var(--fd-blue); color: #ffffff; border: none; border-radius: 4px; font-size: 1rem; font-weight: 600; cursor: pointer;"
+                >
+                    Login
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
