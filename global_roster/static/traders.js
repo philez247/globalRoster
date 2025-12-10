@@ -439,9 +439,80 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Table sorting logic
+  // Table filtering and sorting logic
   const table = document.getElementById("traders-table");
+  const searchInput = document.getElementById("trader-search");
+  const locationFilter = document.getElementById("location-filter");
+  
   if (table) {
+    const tbody = table.querySelector("tbody");
+    const allRows = Array.from(tbody.querySelectorAll("tr"));
+    
+    // Populate location filter with unique locations
+    if (locationFilter && allRows.length > 0) {
+      const locations = new Set();
+      allRows.forEach(row => {
+        const locationCell = row.querySelector("td.col-location");
+        if (locationCell) {
+          const location = locationCell.textContent.trim();
+          if (location) {
+            locations.add(location);
+          }
+        }
+      });
+      
+      // Sort locations and add to dropdown
+      const sortedLocations = Array.from(locations).sort();
+      sortedLocations.forEach(location => {
+        const option = document.createElement("option");
+        option.value = location;
+        option.textContent = location;
+        locationFilter.appendChild(option);
+      });
+    }
+    
+    // Filter function
+    function filterTable() {
+      const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : "";
+      const selectedLocation = locationFilter ? locationFilter.value : "";
+      
+      allRows.forEach(row => {
+        const nameCell = row.querySelector("td.col-name");
+        const locationCell = row.querySelector("td.col-location");
+        
+        const name = nameCell ? nameCell.textContent.toLowerCase() : "";
+        const location = locationCell ? locationCell.textContent.trim() : "";
+        
+        const matchesSearch = !searchTerm || name.includes(searchTerm);
+        const matchesLocation = !selectedLocation || location === selectedLocation;
+        
+        row.style.display = (matchesSearch && matchesLocation) ? "" : "none";
+      });
+      
+      // Show "No traders found" message if all rows are hidden
+      const visibleRows = allRows.filter(row => row.style.display !== "none");
+      const noResultsRow = tbody.querySelector("tr td[colspan='4']");
+      if (noResultsRow) {
+        const noResultsTr = noResultsRow.closest("tr");
+        if (visibleRows.length === 0 && allRows.length > 0) {
+          if (!noResultsTr || !Array.from(tbody.querySelectorAll("tr")).includes(noResultsTr)) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = '<td colspan="4">No traders found.</td>';
+            tbody.appendChild(tr);
+          }
+        } else if (noResultsTr) {
+          noResultsTr.remove();
+        }
+      }
+    }
+    
+    // Add event listeners for filtering
+    if (searchInput) {
+      searchInput.addEventListener("input", filterTable);
+    }
+    if (locationFilter) {
+      locationFilter.addEventListener("change", filterTable);
+    }
     const headers = table.querySelectorAll("th.sortable");
     let currentSort = { key: null, direction: "asc" };
 

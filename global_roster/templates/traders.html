@@ -2,7 +2,18 @@
 {% block content %}
   <div id="sports-data" data-sports='{{ sports | tojson }}' hidden></div>
   <section class="page-section">
-    <h1 class="page-title">FanDuel Trading</h1>
+    <div class="traders-filters">
+      <div class="filter-group">
+        <label for="trader-search">Search by Name:</label>
+        <input type="text" id="trader-search" placeholder="Type to search names..." />
+      </div>
+      <div class="filter-group">
+        <label for="location-filter">Filter by Location:</label>
+        <select id="location-filter">
+          <option value="">All Locations</option>
+        </select>
+      </div>
+    </div>
 
     <div class="traders-table-wrapper">
       <table id="traders-table" class="traders-table">
@@ -10,7 +21,7 @@
           <tr>
             <th data-sort="name" class="sortable col-name">Name</th>
             <th data-sort="alias" class="sortable col-alias">Alias</th>
-            <th data-sort="location" class="sortable col-location">Location</th>
+            <th data-sort="location" class="sortable col-location">Loc</th>
             <th class="col-bio">Bio</th>
           </tr>
         </thead>
